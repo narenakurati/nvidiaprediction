@@ -35,8 +35,9 @@ transistor_density
 #Moore's law predicts that the number of transistors per square inch doubles each year
 
 #1 square mm = 0.00155 square inch
-scaled_transistor_density <- xx80$transistors_millions/xx80$die_size*0.00155
+scaled_transistor_density <- xx80$transistors_millions*1000000/xx80$die_size*0.00155
 scaled_transistor_density
+#this is in number of transistors per square inch
 
 #moore's predicted transistor density
 moore_predicted_scaled_transistory_density <- rep(scaled_transistor_density[1], 7) * c(1,2,4,8,16,32,64)
@@ -56,7 +57,7 @@ summary(nvidia_transistor_model)
 nvidia_transistor_model2 <- lm(transistors ~ date, data = nvidia_transistors)
 summary(nvidia_transistor_model2)
 
-moore_transistor_model <- lm(log2(transistors) ~ date, data = moore_transistors)
+moore_transistor_model <- lm(log(transistors) ~ date, data = moore_transistors)
 summary(moore_transistor_model)
 
 library(car)
@@ -69,7 +70,7 @@ predict(nvidia_transistor_model2, newdata = data.frame("date" = as.Date("2018-08
 predict(nvidia_transistor_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")^2/nvidia_transistors[7,2]
 
 #predicted performance boost by transistor density through moore's law
-#starting point for moore's law is gtx 280 
+#starting point for moore's law is gtx 280
 exp(predict(moore_transistor_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response"))/nvidia_transistors[7,2]
 
 ggplot(transistor_df, aes(x = date, y = transistors, color = type)) + geom_point() + geom_smooth(se=FALSE)
