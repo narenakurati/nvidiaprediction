@@ -5,6 +5,7 @@ date: "3 Juli 2018"
 output: html_document
 ---
 
+##Preliminary Analysis
 ```{r}
 Sys.setenv(LANG = "en")
 #Read in the data
@@ -18,12 +19,14 @@ library(ggplot2)
 m1 <- lm(xx80$core_speed ~ as.Date(xx80$launch))
 summary(m1)
 
-#plot(xx80$core_speed ~ as.Date(xx80$launch))
+#Plotting different variables that have positive correlation with performance
+library(gridExtra)
+p1 <- ggplot(xx80, aes(x = as.Date(launch), y = core_speed)) + geom_point() + geom_smooth(se=FALSE)
+p2 <- ggplot(xx80, aes(x = as.Date(launch), y = cuda_cores)) + geom_point() + geom_smooth(se=FALSE)
+p3 <- ggplot(xx80, aes(x = as.Date(launch), y = core_speed)) + geom_point() + geom_smooth(se=FALSE)
+p4 <- ggplot(xx80, aes(x = as.Date(launch), y = processing_power_single)) + geom_point() + geom_smooth(se=FALSE)
 
-ggplot(xx80, aes(x = as.Date(launch), y = core_speed)) + geom_point() + geom_smooth(method=lm, se=FALSE)
-ggplot(xx80, aes(x = as.Date(launch), y = cuda_cores)) + geom_point() + geom_smooth(method=lm, se=FALSE)
-ggplot(xx80, aes(x = as.Date(launch), y = core_speed)) + geom_point() + geom_smooth(method=lm, se=FALSE)
-ggplot(xx80, aes(x = as.Date(launch), y = processing_power_single)) + geom_point() + geom_smooth(method=lm, se=FALSE)
+grid.arrange(p1,p2,p3,p4, ncol =2, nrow =2)
 
 transistor_density <- xx80$transistors_millions/xx80$die_size
 transistor_density
@@ -44,21 +47,34 @@ moore_dates <- c("2009-01-08", "2011-01-08", "2013-01-08", "2015-01-08", "2017-0
 transistor_df <- data.frame("date" = c(as.Date(xx80$launch), as.Date(moore_dates)), "transistors" = c(scaled_transistor_density, moore_predicted_scaled_transistory_density), "type" = c(rep("real", 7), rep("moore", 7))) 
 transistor_df
 
-nvidia_transistor_model <- lm(log2(transistors[1:7]) ~ date[1:7], data = transistor_df)
+nvidia_transistors <- data.frame("date" = as.Date(xx80$launch), "transistors" = scaled_transistor_density)
+moore_transistors <- data.frame("date" = as.Date(moore_dates), "transistors" = moore_predicted_scaled_transistory_density)
+
+nvidia_transistor_model <- lm(sqrt(transistors) ~ date, data = nvidia_transistors)
 summary(nvidia_transistor_model)
 
-nvidia_transistor_model2 <- lm(transistors[1:7] ~ date[1:7], data = transistor_df)
+nvidia_transistor_model2 <- lm(transistors ~ date, data = nvidia_transistors)
 summary(nvidia_transistor_model2)
 
-moore_transistor_model <- lm(log2(transistors[7:13]) ~ date[7:13], data = transistor_df)
+moore_transistor_model <- lm(log2(transistors) ~ date, data = moore_transistors)
 summary(moore_transistor_model)
 
-#ggplot(transistor_df, aes(x = date, y = transistors, color = type)) + geom_point() + geom_smooth(aes(color = type), method="nls", formula = y ~ x^2, se=FALSE) # + facet_wrap(~ type)
+library(car)
+powerTransform(nvidia_transistors[,2])
+
+#predicted performance boost by transistor density through nvidia linear model
+predict(nvidia_transistor_model2, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")/nvidia_transistors[7,2]
+
+#predicted performance boost by transistor density through nvidia transformed model
+predict(nvidia_transistor_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")^2/nvidia_transistors[7,2]
+
+#predicted performance boost by transistor density through moore's law
+#starting point for moore's law is gtx 280 
+exp(predict(moore_transistor_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response"))/nvidia_transistors[7,2]
 
 ggplot(transistor_df, aes(x = date, y = transistors, color = type)) + geom_point() + geom_smooth(se=FALSE)
+```
 
-#ggplot(xx80, aes(x = as.Date(launch), y = scaled_transistor_density, color = "red")) + geom_point() + geom_smooth(method=lm, se=FALSE)
-
-#ggplot(xx80, aes(x = as.Date(launch), y = moore_predicted_scaled_transistory_density, color = "white")) + geom_point() + geom_smooth(method=lm, se=FALSE)
-
+##Bringing in Synthetic benchmarks
+```{r}
 ```
