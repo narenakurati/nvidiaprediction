@@ -29,9 +29,17 @@ transistor_density
 #million transistors per square mm
 
 #Moore's law predicts that the number of transistors per square inch doubles each year
+
+#1 square mm = 0.00155 square inch
+scaled_transistor_density <- xx80$transistors_millions/xx80$die_size*0.00155
+scaled_transistor_density
+
 #moore's predicted transistor density
+moore_predicted_scaled_transistory_density <- rep(scaled_transistor_density[1], 7) * c(1,2,4,8,16,32,64)
+moore_predicted_scaled_transistory_density
 
-ggplot(xx80, aes(x = as.Date(launch), y = transistor_density)) + geom_point() + geom_smooth(method=lm, se=FALSE)
+ggplot(xx80, aes(x = as.Date(launch), y = scaled_transistor_density, color = "red")) + geom_point() + geom_smooth(method=lm, se=FALSE)
 
+ggplot(xx80, aes(x = as.Date(launch), y = moore_predicted_scaled_transistory_density, color = "white")) + geom_point() + geom_smooth(method=lm, se=FALSE)
 
 ```
