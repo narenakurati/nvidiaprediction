@@ -78,4 +78,8 @@ ggplot(transistor_df, aes(x = date, y = transistors, color = type)) + geom_point
 
 ##Bringing in Synthetic benchmarks
 ```{r}
+#3DMark Graphics Score
+threedmark_score <- c(NA, 3649, 4952, 7672, 10490, 13898, 21787)
+threedmark_score
+xx80$processing_power_single
 ```
