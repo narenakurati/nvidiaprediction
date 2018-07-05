@@ -9,6 +9,7 @@ output: html_document
 ```{r, warning = FALSE}
 Sys.setenv(LANG = "en")
 library(ggplot2)
+library(gridExtra)
 ```
 
 Let’s first bring in the data here. We’re looking at all the cards from the GTX 280 to the current GTX 1080
@@ -17,21 +18,15 @@ xx80 <- read.csv("xx80.csv", sep = ";")
 xx80
 ```
 
+Our most important metrics that are going to help us here are transistor density, cuda core count, core speed, and floating point performance. These tend to be positively correlated with the overall performance of a graphics card, whereas something like memory speed or bus size really depends on the nature of the current architecture.
+```{r}
+p1 <- ggplot(xx80, aes(x = as.Date(launch), y = core_speed)) + geom_point() + geom_smooth(se=FALSE) + labs(x = "time", y = "core clock speed")
+p2 <- ggplot(xx80, aes(x = as.Date(launch), y = cuda_cores)) + geom_point() + geom_smooth(se=FALSE) + labs(x = "time", y = "cuda core count")
+p4 <- ggplot(xx80, aes(x = as.Date(launch), y = processing_power_single)) + geom_point() + geom_smooth(se=FALSE) + labs(x = "time", y = "floating point perf")
+grid.arrange(p2,p1,p4, ncol = 3, nrow =2)
+```
 
-#Play with linear model
-
-m1 <- lm(xx80$core_speed ~ as.Date(xx80$launch))
-summary(m1)
-
-#Plotting different variables that have positive correlation with performance
-library(gridExtra)
-p1 <- ggplot(xx80, aes(x = as.Date(launch), y = core_speed)) + geom_point() + geom_smooth(se=FALSE)
-p2 <- ggplot(xx80, aes(x = as.Date(launch), y = cuda_cores)) + geom_point() + geom_smooth(se=FALSE)
-p3 <- ggplot(xx80, aes(x = as.Date(launch), y = core_speed)) + geom_point() + geom_smooth(se=FALSE)
-p4 <- ggplot(xx80, aes(x = as.Date(launch), y = processing_power_single)) + geom_point() + geom_smooth(se=FALSE)
-
-grid.arrange(p1,p2,p3,p4, ncol =2, nrow =2)
-
+```{r}
 transistor_density <- xx80$transistors_millions/xx80$die_size
 transistor_density
 #million transistors per square mm
