@@ -80,19 +80,56 @@ ggplot(transistor_df, aes(x = date, y = transistors, color = type)) + geom_point
 
 ##Bringing in Synthetic benchmarks
 ```{r}
-#3DMark Graphics Score pulled from 3dmark site
+#3DMark Graphics scores pulled from 3dmark site
 xx80$threedmark_score <- c(NA, 3649, 4952, 7672, 10490, 13898, 21787)
 
-bench <- data.frame("card" = rep(c(280, 480, 580, 680, 780, 980, 1080),2), "score" = c(xx80$processing_power_single, xx80$threedmark_score), "category" = c(rep("teraflops", 7), rep("3d_mark_score", 7)), "date" = rep(xx80$launch, 2))
+#Battlefield1 scores pulled from techspot site
+xx80$battlefield1 <- c(NA, NA, NA, 53 , 68 , 97 , 151)
 
-threedmark_model <- lm(xx80$threedmark_score ~ as.Date(xx80$launch))
+bench <- data.frame("card" = rep(c(280, 480, 580, 680, 780, 980, 1080),3), "score" = c(xx80$processing_power_single, xx80$threedmark_score, xx80$battlefield1), "category" = c(rep("teraflops", 7), rep("3d_mark_score", 7), rep("battlefield1_fps", 7)), "date" = rep(xx80$launch, 3))
+
+threedmark_data <- data.frame("date" = as.Date(xx80$launch), "score" = xx80$threedmark_score)
+tflop_data <- data.frame("date" = as.Date(xx80$launch), "score" = xx80$processing_power_single)
+
+threedmark_model <- lm(score ~ date, threedmark_data)
 summary(threedmark_model)
 
-tflop_model <- lm(xx80$processing_power_single ~ as.Date(xx80$launch))
+tflop_model <- lm(score ~ date, tflop_data)
 summary(tflop_model)
 
+powerTransform(tflop_data[,2])
 
-ggplot(bench, aes(x = as.Date(date), y = score, color = category)) + geom_point() + geom_smooth(se=FALSE)
+tflop_model2 <- lm(sqrt(score) ~ date, tflop_data)
+summary(tflop_model2)
 
+predict(tflop_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")
 
+predict(tflop_model2, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")^2
+
+ggplot(xx80, aes(x = as.Date(launch), y = processing_power_single)) + geom_point() + geom_smooth(se=FALSE, color = "#619CFF")
+ggplot(xx80, aes(x = as.Date(launch), y = threedmark_score)) + geom_point() + geom_smooth(se=FALSE, color = "#F8766D")
+ggplot(xx80, aes(x = as.Date(launch), y = battlefield1)) + geom_point() + geom_smooth(se=FALSE, color = "#00BA38")
+
+#Looking at percentage increase
+xx80$threedmark_percentage <- xx80$threedmark_score/c(1, xx80$threedmark_score[1:6])
+xx80$processing_power_single_percentage <- xx80$processing_power_single/c(NA, xx80$processing_power_single[1:6])
+xx80$battlefield1_percentage <- xx80$battlefield1/c(1, xx80$battlefield1[1:6])
+
+bench_percentage <- data.frame("card" = rep(c(280, 480, 580, 680, 780, 980, 1080),3), "percentage_imporvement" = c(xx80$processing_power_single_percentage, xx80$threedmark_percentage, xx80$battlefield1_percentage), "category" = c(rep("teraflops", 7), rep("3d_mark_score", 7), rep("battlefield1_fps", 7)), "date" = rep(xx80$launch, 3))
+
+ggplot(bench_percentage, aes(x = as.Date(date), y = percentage_imporvement, color = category)) + geom_point() + geom_smooth(se=FALSE)
+
+as.Date(as.character(xx80$launch[2:7])) - as.Date(as.character(xx80$launch[1:6]))
+mean(as.Date(as.character(xx80$launch[2:7])) - as.Date(as.character(xx80$launch[1:6])))
+as.Date(as.character(xx80$launch[7])) - as.Date(as.character("2018-07-05"))
+830/440
 ```
+
+Seeing above, we can separate the releases between BIG and SMALL performance improvments. GTX 480, 680, and 1080 were BIG performance improvements. GTX 580, 780, and 980 were SMALL performance improvements. Given the time since the last release is 1.88 times greater than the average time in between releases, we can assume we are in for a significant performance boost with this next generation.
+```{r}
+xx80$processing_power_single_percentage
+mean(xx80$processing_power_single_percentage[c(2,4,7)])
+xx80$processing_power_single[7] * mean(xx80$processing_power_single_percentage[c(2,4,7)])
+```
+
+Ultimately predict floating-point performance, transistor density, and 3dmark score. Use these three metrics to predict an overall performance boost from previous generation. Also use aggregated gaming benchmarks. Create models to see correlation between synthetic benchmarks and games.
