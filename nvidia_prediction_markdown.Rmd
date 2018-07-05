@@ -117,6 +117,8 @@ xx80$battlefield1_percentage <- xx80$battlefield1/c(1, xx80$battlefield1[1:6])
 
 bench_percentage <- data.frame("card" = rep(c(280, 480, 580, 680, 780, 980, 1080),3), "percentage_imporvement" = c(xx80$processing_power_single_percentage, xx80$threedmark_percentage, xx80$battlefield1_percentage), "category" = c(rep("teraflops", 7), rep("3d_mark_score", 7), rep("battlefield1_fps", 7)), "date" = rep(xx80$launch, 3))
 
+bench_percentage
+
 ggplot(bench_percentage, aes(x = as.Date(date), y = percentage_imporvement, color = category)) + geom_point() + geom_smooth(se=FALSE)
 
 as.Date(as.character(xx80$launch[2:7])) - as.Date(as.character(xx80$launch[1:6]))
@@ -137,6 +139,10 @@ xx80$processing_power_single[7] * mean(xx80$processing_power_single_percentage[c
 #Have already added in Battlefield 1 benchmarks at 1080p
 xx80$battlefield1
 
+game_synthetic_scores <- data.frame("date" = as.Date(xx80$launch), "battlefield1" = xx80$battlefield1, "tflop" = xx80$processing_power_single, "threedmark" = xx80$threedmark_score)
+
+game_synthetic_model <- lm(battlefield1 ~ sqrt(tflop) + threedmark, data = game_synthetic_scores)
+summary(game_synthetic_model)
 ```
 
 Ultimately predict floating-point performance, transistor density, and 3dmark score. Use these three metrics to predict an overall performance boost from previous generation. Also use aggregated gaming benchmarks. Create models to see correlation between synthetic benchmarks and games.
