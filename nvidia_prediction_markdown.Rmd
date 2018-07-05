@@ -135,9 +135,11 @@ xx80$processing_power_single[7] * mean(xx80$processing_power_single_percentage[c
 ```
 
 ##Bringing in Game Benchmarks
+Won't be looking too much into gaming benchmarks as the people over at Anandtech, Techspot, and PCPer have this down with great detail.
 ```{r}
 #Have already added in Battlefield 1 benchmarks at 1080p
 xx80$battlefield1
+
 
 game_synthetic_scores <- data.frame("date" = as.Date(xx80$launch), "battlefield1" = xx80$battlefield1, "tflop" = xx80$processing_power_single, "threedmark" = xx80$threedmark_score)
 
