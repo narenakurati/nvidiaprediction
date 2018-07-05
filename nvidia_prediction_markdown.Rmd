@@ -73,7 +73,7 @@ predict(nvidia_transistor_model, newdata = data.frame("date" = as.Date("2018-08-
 #starting point for moore's law is gtx 280
 exp(predict(moore_transistor_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response"))/nvidia_transistors[7,2]
 
-ggplot(transistor_df, aes(x = date, y = transistors, color = type)) + geom_point() + geom_smooth(se=FALSE)
+ggplot(transistor_df, aes(x = date, y = transistors, color = type)) + geom_point() + geom_smooth(se=FALSE) + geom_point(aes(x=as.Date("2018-08-01"), y=predict(nvidia_transistor_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")^2), shape = 16, color = "black", size = 2) + geom_point(aes(x=as.Date("2018-08-01"), y=predict(nvidia_transistor_model2, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")), shape = 16, color = "black", size = 2) + geom_point(aes(x=as.Date("2018-08-01"), y=exp(predict(moore_transistor_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response"))), color = "black", size = 2)
 ```
 
 ##Bringing in Synthetic benchmarks
