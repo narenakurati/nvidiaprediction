@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ##Preliminary Analysis
-```{r}
+```{r, warning = FALSE}
 Sys.setenv(LANG = "en")
 #Read in the data
 xx80 <- read.csv("xx80.csv", sep = ";")
@@ -79,7 +79,7 @@ ggplot(transistor_df, aes(x = date, y = transistors, color = type)) + geom_point
 ```
 
 ##Bringing in Synthetic benchmarks
-```{r}
+```{r, warning = FALSE}
 #3DMark Graphics scores pulled from 3dmark site
 xx80$threedmark_score <- c(NA, 3649, 4952, 7672, 10490, 13898, 21787)
 
@@ -130,6 +130,13 @@ Seeing above, we can separate the releases between BIG and SMALL performance imp
 xx80$processing_power_single_percentage
 mean(xx80$processing_power_single_percentage[c(2,4,7)])
 xx80$processing_power_single[7] * mean(xx80$processing_power_single_percentage[c(2,4,7)])
+```
+
+##Bringing in Game Benchmarks
+```{r}
+#Have already added in Battlefield 1 benchmarks at 1080p
+xx80$battlefield1
+
 ```
 
 Ultimately predict floating-point performance, transistor density, and 3dmark score. Use these three metrics to predict an overall performance boost from previous generation. Also use aggregated gaming benchmarks. Create models to see correlation between synthetic benchmarks and games.
