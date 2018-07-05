@@ -140,11 +140,23 @@ Won't be looking too much into gaming benchmarks as the people over at Anandtech
 #Have already added in Battlefield 1 benchmarks at 1080p
 xx80$battlefield1
 
+#Tech spot aggregated game performance
+xx80$average_game_perf_1080p <- c(NA, 21, 24, 40, 56, 77, 127)
+xx80$average_game_perf_1600p <- c(NA, 30, 35, 53, 71, 109, 161)
 
-game_synthetic_scores <- data.frame("date" = as.Date(xx80$launch), "battlefield1" = xx80$battlefield1, "tflop" = xx80$processing_power_single, "threedmark" = xx80$threedmark_score)
+game_synthetic_scores <- data.frame("date" = as.Date(xx80$launch), "game_perf_1080p" = xx80$average_game_perf_1080p, "game_perf_1600p" = xx80$average_game_perf_1600p, "tflop" = xx80$processing_power_single, "threedmark" = xx80$threedmark_score)
 
-game_synthetic_model <- lm(battlefield1 ~ sqrt(tflop) + threedmark, data = game_synthetic_scores)
-summary(game_synthetic_model)
+game_synthetic_1080p_model <- lm(game_perf_1080p ~ tflop, data = game_synthetic_scores)
+summary(game_synthetic_1080p_model)
+
+game_synthetic_1600p_model <- lm(game_perf_1600p ~ tflop, data = game_synthetic_scores)
+summary(game_synthetic_1600p_model)
+
+predict(game_synthetic_1080p_model, newdata = data.frame("tflop" = 12328.65, type = "response"))
+177/127
+
+predict(game_synthetic_1600p_model, newdata = data.frame("tflop" = 12328.65, type = "response"))
+226/127
 ```
 
 Ultimately predict floating-point performance, transistor density, and 3dmark score. Use these three metrics to predict an overall performance boost from previous generation. Also use aggregated gaming benchmarks. Create models to see correlation between synthetic benchmarks and games.

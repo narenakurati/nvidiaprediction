@@ -470,28 +470,64 @@ bench_percentage</code></pre>
 <pre class="r"><code>#Have already added in Battlefield 1 benchmarks at 1080p
 xx80$battlefield1</code></pre>
 <pre><code>## [1]  NA  NA  NA  53  68  97 151</code></pre>
-<pre class="r"><code>game_synthetic_scores &lt;- data.frame(&quot;date&quot; = as.Date(xx80$launch), &quot;battlefield1&quot; = xx80$battlefield1, &quot;tflop&quot; = xx80$processing_power_single, &quot;threedmark&quot; = xx80$threedmark_score)
+<pre class="r"><code>#Tech spot aggregated game performance
+xx80$average_game_perf_1080p &lt;- c(NA, 21, 24, 40, 56, 77, 127)
+xx80$average_game_perf_1600p &lt;- c(NA, 30, 35, 53, 71, 109, 161)
 
-game_synthetic_model &lt;- lm(battlefield1 ~ sqrt(tflop) + threedmark, data = game_synthetic_scores)
-summary(game_synthetic_model)</code></pre>
+game_synthetic_scores &lt;- data.frame(&quot;date&quot; = as.Date(xx80$launch), &quot;game_perf_1080p&quot; = xx80$average_game_perf_1080p, &quot;game_perf_1600p&quot; = xx80$average_game_perf_1600p, &quot;tflop&quot; = xx80$processing_power_single, &quot;threedmark&quot; = xx80$threedmark_score)
+
+game_synthetic_1080p_model &lt;- lm(game_perf_1080p ~ tflop, data = game_synthetic_scores)
+summary(game_synthetic_1080p_model)</code></pre>
 <pre><code>## 
 ## Call:
-## lm(formula = battlefield1 ~ sqrt(tflop) + threedmark, data = game_synthetic_scores)
+## lm(formula = game_perf_1080p ~ tflop, data = game_synthetic_scores)
 ## 
 ## Residuals:
-##       4       5       6       7 
-##  2.1717 -2.9535  0.3438  0.4380 
+##       2       3       4       5       6       7 
+##  1.2472  0.8574 -4.8088 -1.5311  5.0523 -0.8169 
 ## 
 ## Coefficients:
-##              Estimate Std. Error t value Pr(&gt;|t|)
-## (Intercept) 27.715259  73.934738   0.375    0.772
-## sqrt(tflop) -0.898500   2.165590  -0.415    0.750
-## threedmark   0.009523   0.005930   1.606    0.355
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 0.4461073  2.7914181    0.16    0.881    
+## tflop       0.0143549  0.0005924   24.23 1.72e-05 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
-## Residual standard error: 3.708 on 1 degrees of freedom
-##   (3 observations deleted due to missingness)
-## Multiple R-squared:  0.9975, Adjusted R-squared:  0.9926 
-## F-statistic: 203.2 on 2 and 1 DF,  p-value: 0.04954</code></pre>
+## Residual standard error: 3.673 on 4 degrees of freedom
+##   (1 observation deleted due to missingness)
+## Multiple R-squared:  0.9932, Adjusted R-squared:  0.9915 
+## F-statistic: 587.1 on 1 and 4 DF,  p-value: 1.721e-05</code></pre>
+<pre class="r"><code>game_synthetic_1600p_model &lt;- lm(game_perf_1600p ~ tflop, data = game_synthetic_scores)
+summary(game_synthetic_1600p_model)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = game_perf_1600p ~ tflop, data = game_synthetic_scores)
+## 
+## Residuals:
+##       2       3       4       5       6       7 
+##  0.6413  1.4079 -7.6504 -5.5389 14.4567 -3.3166 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 5.247182   6.708340   0.782 0.477816    
+## tflop       0.017927   0.001424  12.592 0.000229 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 8.826 on 4 degrees of freedom
+##   (1 observation deleted due to missingness)
+## Multiple R-squared:  0.9754, Adjusted R-squared:  0.9692 
+## F-statistic: 158.6 on 1 and 4 DF,  p-value: 0.0002289</code></pre>
+<pre class="r"><code>predict(game_synthetic_1080p_model, newdata = data.frame(&quot;tflop&quot; = 12328.65, type = &quot;response&quot;))</code></pre>
+<pre><code>##        1 
+## 177.4223</code></pre>
+<pre class="r"><code>177/127</code></pre>
+<pre><code>## [1] 1.393701</code></pre>
+<pre class="r"><code>predict(game_synthetic_1600p_model, newdata = data.frame(&quot;tflop&quot; = 12328.65, type = &quot;response&quot;))</code></pre>
+<pre><code>##        1 
+## 226.2672</code></pre>
+<pre class="r"><code>226/127</code></pre>
+<pre><code>## [1] 1.779528</code></pre>
 <p>Ultimately predict floating-point performance, transistor density, and 3dmark score. Use these three metrics to predict an overall performance boost from previous generation. Also use aggregated gaming benchmarks. Create models to see correlation between synthetic benchmarks and games.</p>
 </div>
 
