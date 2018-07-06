@@ -12,7 +12,7 @@ library(ggplot2)
 library(gridExtra)
 ```
 
-Let’s first bring in the data here. We’re looking at all the cards from the GTX 280 to the current GTX 1080
+Let's first bring in the data here. We're looking at all the cards from the GTX 280 to the current GTX 1080
 ```{r}
 xx80 <- read.csv("xx80.csv", sep = ";")
 xx80
