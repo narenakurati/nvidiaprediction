@@ -10,6 +10,8 @@ output: html_document
 Sys.setenv(LANG = "en")
 library(ggplot2)
 library(gridExtra)
+library(knitr)
+library(kableExtra)
 ```
 
 Let's first bring in the data here. We're looking at all the cards from the GTX 280 to the current GTX 1080
@@ -26,17 +28,12 @@ p4 <- ggplot(xx80, aes(x = as.Date(launch), y = processing_power_single)) + geom
 grid.arrange(p2,p1,p4, ncol = 3, nrow =2)
 ```
 
+However, one metric is very important for gauging raw computer performance and that's transistor density. Let's create a vector for transistor density and rewrite it in terms of transistors per square inch.
 ```{r}
 transistor_density <- xx80$transistors_millions/xx80$die_size
-transistor_density
-#million transistors per square mm
-
-#Moore's law predicts that the number of transistors per square inch doubles each year
-
-#1 square mm = 0.00155 square inch
 scaled_transistor_density <- xx80$transistors_millions*1000000/xx80$die_size*0.00155
-scaled_transistor_density
-#this is in number of transistors per square inch
+
+kable(data.frame("card" = xx80$ï..model, "transistor_denisty" = scaled_transistor_density))
 
 #moore's predicted transistor density
 moore_predicted_scaled_transistory_density <- rep(scaled_transistor_density[1], 9) * c(1,2,4,8,16,32,64,128,256)
