@@ -54,7 +54,7 @@ transistor_df
 transistor_df_subset <- transistor_df[1:7,]
 transistor_df_subset
 
-ggplot(transistor_df, aes(x = date, y = transistors, color = type)) + geom_point() + geom_smooth(se=FALSE) + scale_color_manual(values=c("#76b900", "royalblue1")) + xlim(as.Date("2009-01-08"), as.Date("2018-08-02")) + ylim(0, 500000) + labs(x = "time", y = "transistor_density")
+ggplot(transistor_df, aes(x = date, y = transistors, color = type)) + geom_point() + geom_smooth(se=FALSE) + scale_color_manual(values=c("royalblue1", "#76b900")) + xlim(as.Date("2009-01-08"), as.Date("2018-08-02")) + ylim(0, 500000) + labs(x = "time", y = "transistor_density")
 ```
 
 As far as predicting the GTX 1180's transistor density, we can very clearly see that Moore's Law is not going to help us here. Let's create a linear model regressing past GTX graphics cards' transistor densities against time. While the specific release date of each graphics card is definitely important, it's better to avoid using them as factors. Instead we take the response variable as continuous. THis helps us a lot more with our model's accuracy, especially since, to us, the release date of each graphics card is more or less arbitrary and in the control of Nvidia. 
