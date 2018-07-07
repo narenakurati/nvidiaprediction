@@ -8,6 +8,7 @@ output: html_document
 ##Preliminary Analysis
 ```{r, warning = FALSE}
 Sys.setenv(LANG = "en")
+library(car)
 library(ggplot2)
 library(gridExtra)
 library(knitr)
@@ -20,22 +21,23 @@ xx80 <- read.csv("xx80.csv", sep = ";")
 xx80
 ```
 
-Our most important metrics that are going to help us here are transistor density, cuda core count, core speed, and floating point performance. These tend to be positively correlated with the overall performance of a graphics card, whereas something like memory speed or bus size really depends on the nature of the current architecture.
+The most important metrics that are going to help here are floating point performance, synthetic benchmarks, game benchmarks, and transistor count. These tend to be positively correlated with the overall performance of a graphics card, whereas something like memory speed or bus size really depends on the nature of the current architecture.
 ```{r}
-p1 <- ggplot(xx80, aes(x = as.Date(launch), y = core_speed)) + geom_point() + geom_smooth(se=FALSE) + labs(x = "time", y = "core clock speed")
-p2 <- ggplot(xx80, aes(x = as.Date(launch), y = cuda_cores)) + geom_point() + geom_smooth(se=FALSE) + labs(x = "time", y = "cuda core count")
-p4 <- ggplot(xx80, aes(x = as.Date(launch), y = processing_power_single)) + geom_point() + geom_smooth(se=FALSE) + labs(x = "time", y = "floating point perf")
-grid.arrange(p2,p1,p4, ncol = 3, nrow =2)
+# p1 <- ggplot(xx80, aes(x = as.Date(launch), y = core_speed)) + geom_point() + geom_smooth(se=FALSE) + labs(x = "time", y = "core clock speed")
+# p2 <- ggplot(xx80, aes(x = as.Date(launch), y = cuda_cores)) + geom_point() + geom_smooth(se=FALSE) + labs(x = "time", y = "cuda core count")
+# p4 <- ggplot(xx80, aes(x = as.Date(launch), y = processing_power_single)) + geom_point() + geom_smooth(se=FALSE) + labs(x = "time", y = "floating point perf")
+# grid.arrange(p2,p1,p4, ncol = 3, nrow =2)
 ```
 
-However, one metric is very important for gauging raw computer performance and that's transistor density. Let's create a vector for transistor density and rewrite it in terms of transistors per square inch.
+##Transistor Density
+Rescale the data for transistor density in terms of transistors per square inch.
 ```{r}
 transistor_density <- xx80$transistors_millions/xx80$die_size
 scaled_transistor_density <- xx80$transistors_millions*1000000/xx80$die_size*0.00155
 kable(data.frame("card" = xx80[,1], "transistor_denisty" = scaled_transistor_density)) %>%  kable_styling(bootstrap_options = c("striped", "hover", "condensed")) %>% save_kable(file = "cards_transistor_density.html", self_contained = F)
 ```
 
-Moore’s Law predicts that the number of transistors per square inch doubles each 18 months. This may be an interesting metric in predicting future Nvidia transistor density. Let’s create another vector for what Moore’s Law predicts the transistor density to be taking the GTX 280’s transistor density as our starting point.
+Moore’s Law predicts that the number of transistors per square inch doubles each 18 months. This may be helpful in predicting future Nvidia transistor density. Let’s create another vector for what Moore’s Law predicts the transistor density to be taking the GTX 280’s launch date transistor density as our starting point.
 ```{r}
 #moore's predicted transistor density
 moore_predicted_scaled_transistory_density <- rep(scaled_transistor_density[1], 9) * c(1,2,4,8,16,32,64,128,256)
@@ -51,13 +53,10 @@ Let's see where Nvidia's transistor density is compared to Moore's Law.
 transistor_df <- data.frame("date" = c(as.Date(xx80$launch), as.Date(moore_dates)), "transistors" = c(scaled_transistor_density, moore_predicted_scaled_transistory_density), "type" = c(rep("nvidia", 7), rep("moore", 9))) 
 transistor_df
 
-transistor_df_subset <- transistor_df[1:7,]
-transistor_df_subset
-
 ggplot(transistor_df, aes(x = date, y = transistors, color = type)) + geom_point() + geom_smooth(se=FALSE) + scale_color_manual(values=c("royalblue1", "#76b900")) + xlim(as.Date("2009-01-08"), as.Date("2018-08-02")) + ylim(0, 500000) + labs(x = "time", y = "transistor_density")
 ```
 
-It looks like Nvidia's progression in transitor density has not kept up with Moore's Law. This makes sense, as it becomes increasingly more difficult with each generation to keep up such progress. Now let's create a linear model regressing past GTX graphics cards' transistor densities against time. While the specific release date of each graphics card is definitely important, it's probably better we avoid using them as factors. Instead we take the response variable as continuous. THis helps us a lot more with our model's accuracy, especially since, to us, the release date of each graphics card is more or less arbitrary and in the control of Nvidia. 
+It looks like Nvidia’s progression in transitor density has not kept up with Moore’s Law. This makes sense, as it becomes increasingly more difficult with each generation to keep up such progress. Now let’s create a linear model regressing past GTX graphics cards’ transistor densities against time. While the specific release date of each graphics card is definitely important, it’s probably better we avoid using them as factors. Instead we take the response variable as continuous. This helps us a lot more with our model’s accuracy, especially since, to us, the release date of each graphics card is more or less arbitrary and in the control of Nvidia.
 ```{r}
 nvidia_transistors <- data.frame("date" = as.Date(xx80$launch), "transistors" = scaled_transistor_density)
 moore_transistors <- data.frame("date" = as.Date(moore_dates), "transistors" = moore_predicted_scaled_transistory_density)
@@ -66,16 +65,15 @@ nvidia_transistor_model <- lm(transistors ~ date, data = nvidia_transistors)
 summary(nvidia_transistor_model)
 ```
 
-A linear fit seems to be pretty good, and we have a significant slope with an incredibly low p-value. However, this can be made better. Now while we saw Nvidia's transistor density improvments don't happen at the level Moore's Law suggests, the growth is certainly more than linear. Power transform close to 0.5 suggests a square root transformation on y. Our new model is now more accurate.
+A linear fit seems to be pretty good, and we have a significant slope with an incredibly low p-value. However, this can be made better. Now while we saw Nvidia’s transistor density improvments don’t happen at the level Moore’s Law suggests, the growth is certainly more than linear. Power transform close to 0.5 suggests a square root transformation on y. Our new model is now more accurate.
 ```{r}
-library(car)
 powerTransform(nvidia_transistors[,2])
 
 nvidia_transistor_model_2 <- lm(sqrt(transistors) ~ date, data = nvidia_transistors)
 summary(nvidia_transistor_model_2)
 ```
 
-Now let's use both models to predict transistor densities for an estimated release GTX 1180 release date of August 1, 2018. We use both the linear model and the transformed models from before to predict two transistor densities. We divide each by the GTX 1080's transistor density to calculate what the GTX 1180's percentage increase in transistor density will be. We plot our new predicted transistor densities on our graph. It looks like we can expect anywhere between 15.6% and 37.4% boost in transistor density with the new GTX 1180.
+Now let’s use both models to predict transistor densities for an estimated release GTX 1180 release date of August 1, 2018. We use both the linear model and the transformed models from before to predict two transistor densities. We divide each by the GTX 1080’s transistor density to calculate what the GTX 1180’s percentage increase in transistor density will be. We plot our new predicted transistor densities on our graph. It looks like we can expect anywhere between *15.6%* and *37.4%* boost in transistor density with the new GTX 1180.
 ```{r}
 #predicted performance boost by transistor density through nvidia linear model
 predict(nvidia_transistor_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")/nvidia_transistors[7,2] - 1
