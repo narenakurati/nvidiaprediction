@@ -11,7 +11,7 @@ Sys.setenv(LANG = "en")
 library(ggplot2)
 library(gridExtra)
 library(knitr)
-#library(kableExtra)
+library(kableExtra)
 ```
 
 Let's first bring in the data here. We're looking at all the cards from the GTX 280 to the current GTX 1080
@@ -32,7 +32,7 @@ However, one metric is very important for gauging raw computer performance and t
 ```{r}
 transistor_density <- xx80$transistors_millions/xx80$die_size
 scaled_transistor_density <- xx80$transistors_millions*1000000/xx80$die_size*0.00155
-#kable(data.frame("card" = xx80[,1], "transistor_denisty" = scaled_transistor_density))
+kable(data.frame("card" = xx80[,1], "transistor_denisty" = scaled_transistor_density)) %>%  kable_styling(bootstrap_options = c("striped", "hover", "condensed")) %>% save_kable(file = "cards_transistor_density.html")
 ```
 
 Moore’s Law predicts that the number of transistors per square inch doubles each 18 months. This may be an interesting metric in predicting future Nvidia transistor density. Let’s create another vector for what Moore’s Law predicts the transistor density to be taking the GTX 280’s transistor density as our starting point.
@@ -42,6 +42,8 @@ moore_predicted_scaled_transistory_density <- rep(scaled_transistor_density[1], 
 moore_predicted_scaled_transistory_density
 
 moore_dates <- c("2009-01-08", "2010-07-08", "2012-01-08", "2012-07-08", "2014-01-08", "2015-07-08", "2017-01-08", "2018-07-08", "2020-01-08")
+
+kable(data.frame("date" = moore_dates, "transistor_denisty" = moore_predicted_scaled_transistory_density))
 
 transistor_df <- data.frame("date" = c(as.Date(xx80$launch), as.Date(moore_dates)), "transistors" = c(scaled_transistor_density, moore_predicted_scaled_transistory_density), "type" = c(rep("real", 7), rep("moore", 9))) 
 transistor_df
