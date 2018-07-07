@@ -57,7 +57,7 @@ transistor_df_subset
 ggplot(transistor_df, aes(x = date, y = transistors, color = type)) + geom_point() + geom_smooth(se=FALSE) + scale_color_manual(values=c("royalblue1", "#76b900")) + xlim(as.Date("2009-01-08"), as.Date("2018-08-02")) + ylim(0, 500000) + labs(x = "time", y = "transistor_density")
 ```
 
-As far as predicting the GTX 1180's transistor density, we can very clearly see that Moore's Law is not going to help us here. Let's create a linear model regressing past GTX graphics cards' transistor densities against time. While the specific release date of each graphics card is definitely important, it's better to avoid using them as factors. Instead we take the response variable as continuous. THis helps us a lot more with our model's accuracy, especially since, to us, the release date of each graphics card is more or less arbitrary and in the control of Nvidia. 
+It looks like Nvidia's progression in transitor density has not kept up with Moore's Law. This makes sense, as it becomes increasingly more difficult with each generation to keep up such progress. Now let's create a linear model regressing past GTX graphics cards' transistor densities against time. While the specific release date of each graphics card is definitely important, it's probably better we avoid using them as factors. Instead we take the response variable as continuous. THis helps us a lot more with our model's accuracy, especially since, to us, the release date of each graphics card is more or less arbitrary and in the control of Nvidia. 
 ```{r}
 nvidia_transistors <- data.frame("date" = as.Date(xx80$launch), "transistors" = scaled_transistor_density)
 moore_transistors <- data.frame("date" = as.Date(moore_dates), "transistors" = moore_predicted_scaled_transistory_density)
@@ -66,46 +66,26 @@ nvidia_transistor_model <- lm(transistors ~ date, data = nvidia_transistors)
 summary(nvidia_transistor_model)
 ```
 
-A linear fit seems to be pretty good, and we have a significant slope with an incredibly low p-value. However, this can be made better. Now while we saw Nvidia's transistor density improvments don't happen at the level Moore's Law suggests, the growth is certainly more rapid than a linear model would accurately predict. Power transform close to 0.5 suggests a square root transformation on y. Our new model is now more accurate.
+A linear fit seems to be pretty good, and we have a significant slope with an incredibly low p-value. However, this can be made better. Now while we saw Nvidia's transistor density improvments don't happen at the level Moore's Law suggests, the growth is certainly more than linear. Power transform close to 0.5 suggests a square root transformation on y. Our new model is now more accurate.
 ```{r}
 library(car)
 powerTransform(nvidia_transistors[,2])
 
 nvidia_transistor_model_2 <- lm(sqrt(transistors) ~ date, data = nvidia_transistors)
 summary(nvidia_transistor_model_2)
-
-moore_transistor_model <- lm(log(transistors) ~ date, data = moore_transistors)
-summary(moore_transistor_model)
 ```
 
-Now let's use both models to predict transistor densities for a an x-value of August 1, 2018 (assuming the new GTX 1180 will come out in the next few weeks).
+Now let's use both models to predict transistor densities for an estimated release GTX 1180 release date of August 1, 2018. We use both the linear model and the transformed models from before to predict two transistor densities. We divide each by the GTX 1080's transistor density to calculate what the GTX 1180's percentage increase in transistor density will be. We plot our new predicted transistor densities on our graph. It looks like we can expect anywhere between 15.6% and 37.4% boost in transistor density with the new GTX 1180.
 ```{r}
 #predicted performance boost by transistor density through nvidia linear model
-predict(nvidia_transistor_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")/nvidia_transistors[7,2]
+predict(nvidia_transistor_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")/nvidia_transistors[7,2] - 1
 
 #predicted performance boost by transistor density through nvidia transformed model
-predict(nvidia_transistor_model_2, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")^2/nvidia_transistors[7,2]
+predict(nvidia_transistor_model_2, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")^2/nvidia_transistors[7,2] - 1
 
-#predicted performance boost by transistor density through moore's law
-#starting point for moore's law is gtx 280
-exp(predict(moore_transistor_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response"))/nvidia_transistors[7,2]
+ggplot(nvidia_transistors, aes(x = date, y = transistors,)) + geom_point() + geom_smooth(se=FALSE,  color = "#76b900") + xlim(as.Date("2009-01-08"), as.Date("2018-8-02")) + ylim(0, 50000) + labs(x = "time", y = "transistor_density") + geom_point(aes(x=as.Date("2018-08-01"), y=predict(nvidia_transistor_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")), shape = 16, color = "black", size = 2) + geom_point(aes(x=as.Date("2018-08-01"), y=predict(nvidia_transistor_model_2, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")^2), shape = 16, color = "black", size = 2) + ggtitle("Nvidia GTX cards transistor density over time")
 ```
 
-Add these values to the plot.
-```{r}
-ggplot(nvidia_transistors, aes(x = date, y = transistors,)) + geom_point() + geom_smooth(se=FALSE,  color = "#76b900") + xlim(as.Date("2009-01-08"), as.Date("2018-8-02")) + ylim(0, 50000) + labs(x = "time", y = "transistor_density") + geom_point(aes(x=as.Date("2018-08-01"), y=predict(nvidia_transistor_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")), shape = 15, color = "black", size = 2) + geom_point(aes(x=as.Date("2018-08-01"), y=predict(nvidia_transistor_model_2, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")^2), shape = 17, color = "black", size = 2) 
-
-
-#switched models, careful below
-
-# + geom_label(aes(x=as.Date("2017-09-01"), y=predict(nvidia_transistor_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")^2), label = "transformed") + geom_label(aes(x=as.Date("2018-01-01"), y=predict(nvidia_transistor_model2, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")), label = "linear")
-
-#ggplot(transistor_df, aes(x = date, y = transistors, color = type)) + geom_point() + geom_smooth(se=FALSE) + geom_point(aes(x=as.Date("2018-08-01"), y=predict(nvidia_transistor_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")^2), shape = 16, color = "black", size = 2) + geom_point(aes(x=as.Date("2018-08-01"), y=predict(nvidia_transistor_model2, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")), shape = 16, color = "black", size = 2) + geom_point(aes(x=as.Date("2018-08-01"), y=exp(predict(moore_transistor_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response"))), color = "black", size = 2) + xlim(as.Date("2009-01-08"), as.Date("2018-08-02")) 
-
-#ggplot(transistor_df_subset, aes(x = date, y = transistors)) + geom_point() + geom_smooth(se=FALSE) + geom_point(aes(x=as.Date("2018-08-01"), y=predict(nvidia_transistor_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")^2), shape = 16, color = "black", size = 2) + geom_point(aes(x=as.Date("2018-08-01"), y=predict(nvidia_transistor_model2, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")), shape = 16, color = "black", size = 2)
-
-
-```
 
 ##Bringing in Synthetic benchmarks
 ```{r, warning = FALSE}
