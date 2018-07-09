@@ -128,8 +128,8 @@ $(document).ready(function () {
 </div>
 
 
-<div id="preliminary-analysis" class="section level2">
-<h2>Preliminary Analysis</h2>
+<div id="approach" class="section level2">
+<h2>Approach</h2>
 <pre class="r"><code>Sys.setenv(LANG = &quot;en&quot;)
 library(car)</code></pre>
 <pre><code>## Loading required package: carData</code></pre>
@@ -164,7 +164,7 @@ xx80</code></pre>
 ## 5    288.400 384                 3976.70                  165.70 250   649
 ## 6    224.400 256                 4981.00                  155.60 165   549
 ## 7    320.300 256                 8873.00                  277.30 180   599</code></pre>
-<p>Our most important metrics that are going to help us here are floating point performance, synthetic benchmarks, game benchmarks, and transistor count. These tend to be positively correlated with the overall performance of a graphics card, whereas something like memory speed or bus size really depends on the nature of the current architecture.</p>
+<p>The most important metrics that are going to help here are floating point performance, synthetic benchmarks, game benchmarks, and transistor count. These tend to be positively correlated with the overall performance of a graphics card, whereas something like memory speed or bus size really depends on the nature of the current architecture.</p>
 <pre class="r"><code># p1 &lt;- ggplot(xx80, aes(x = as.Date(launch), y = core_speed)) + geom_point() + geom_smooth(se=FALSE) + labs(x = &quot;time&quot;, y = &quot;core clock speed&quot;)
 # p2 &lt;- ggplot(xx80, aes(x = as.Date(launch), y = cuda_cores)) + geom_point() + geom_smooth(se=FALSE) + labs(x = &quot;time&quot;, y = &quot;cuda core count&quot;)
 # p4 &lt;- ggplot(xx80, aes(x = as.Date(launch), y = processing_power_single)) + geom_point() + geom_smooth(se=FALSE) + labs(x = &quot;time&quot;, y = &quot;floating point perf&quot;)
@@ -172,11 +172,11 @@ xx80</code></pre>
 </div>
 <div id="transistor-density" class="section level2">
 <h2>Transistor Density</h2>
-<p>Let’s start by looking at transistor density in terms of transistors per square inch.</p>
+<p>Rescale the data for transistor density in terms of transistors per square inch.</p>
 <pre class="r"><code>transistor_density &lt;- xx80$transistors_millions/xx80$die_size
 scaled_transistor_density &lt;- xx80$transistors_millions*1000000/xx80$die_size*0.00155
 kable(data.frame(&quot;card&quot; = xx80[,1], &quot;transistor_denisty&quot; = scaled_transistor_density)) %&gt;%  kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;)) %&gt;% save_kable(file = &quot;cards_transistor_density.html&quot;, self_contained = F)</code></pre>
-<p>Moore’s Law predicts that the number of transistors per square inch doubles each 18 months. This may be an interesting metric in predicting future Nvidia transistor density. Let’s create another vector for what Moore’s Law predicts the transistor density to be taking the GTX 280’s launch date transistor density as our starting point.</p>
+<p>Moore’s Law predicts that the number of transistors per square inch doubles each 18 months. This may be helpful in predicting future Nvidia transistor density. Let’s create another vector for what Moore’s Law predicts the transistor density to be taking the GTX 280’s launch date transistor density as our starting point.</p>
 <pre class="r"><code>#moore's predicted transistor density
 moore_predicted_scaled_transistory_density &lt;- rep(scaled_transistor_density[1], 9) * c(1,2,4,8,16,32,64,128,256)
 moore_predicted_scaled_transistory_density</code></pre>

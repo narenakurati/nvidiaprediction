@@ -5,7 +5,7 @@ date: "7/5/2018"
 output: html_document
 ---
 
-##Preliminary Analysis
+##Approach
 ```{r, warning = FALSE}
 Sys.setenv(LANG = "en")
 library(car)
