@@ -39,13 +39,13 @@ kable(data.frame("date" = moore_dates, "transistor_denisty" = moore_predicted_sc
 ```
 
 Let's see where Nvidia's transistor density is compared to Moore's Law.
-```{r}
+```{r, warning = FALSE, fig.align='center'}
 transistor_df <- data.frame("date" = c(as.Date(xx80$launch), as.Date(moore_dates)), "transistors" = c(scaled_transistor_density, moore_predicted_scaled_transistory_density), "type" = c(rep("nvidia", 7), rep("moore", 9))) 
 
-ggplot(transistor_df, aes(x = date, y = transistors, color = type)) + geom_point() + geom_smooth(se=FALSE) + scale_color_manual(values=c("royalblue1", "#76b900")) + xlim(as.Date("2009-01-08"), as.Date("2018-08-02")) + ylim(0, 500000) + labs(x = "time", y = "transistor_density")
+ggplot(transistor_df, aes(x = date, y = transistors, color = type)) + geom_point() + geom_smooth(se=FALSE) + scale_color_manual(values=c("royalblue1", "#76b900")) + xlim(as.Date("2009-01-08"), as.Date("2018-08-02")) + ylim(0, 500000) + labs(x = "time", y = "transistor density")
 ```
 
-It looks like Nvidia's progression in transitor density has not kept up with Moore's Law. This makes sense, as it becomes increasingly more difficult with each generation to keep up such progress. Let's create a linear model regressing past GTX graphics cards' transistor densities against time. While the specific release date of each graphics card is definitely important, it's better to avoid using them as factors. Instead, we take the response variable as continuous. This helps a lot more with the model's accuracy, especially since, to us, the release date of each graphics card is more or less arbitrary and in the control of Nvidia.
+It looks like Nvidia's progression in transitor density has not kept up with Moore's Law. This makes sense, as it becomes increasingly more difficult with each generation to keep up such progress. Let's create a linear model regressing past GTX graphics cards' transistor densities against time. While the specific release date of each graphics card is definitely important, it's better to avoid using them as factors. Instead, we take the predictor variable, time, as continuous. This helps a lot more with the model's accuracy, especially since, to us, the release date of each graphics card is more or less arbitrary and in the control of Nvidia.
 ```{r}
 nvidia_transistors <- data.frame("date" = as.Date(xx80$launch), "transistors" = scaled_transistor_density)
 moore_transistors <- data.frame("date" = as.Date(moore_dates), "transistors" = moore_predicted_scaled_transistory_density)
@@ -62,47 +62,50 @@ nvidia_transistor_model_2 <- lm(sqrt(transistors) ~ date, data = nvidia_transist
 summary(nvidia_transistor_model_2)
 ```
 
-Now we use both models to predict transistor densities for an estimated release GTX 1180 release date of August 1, 2018. Divide each by the GTX 1080's transistor density to calculate what the GTX 1180's percentage increase in transistor density will be. We plot our new predicted transistor densities on our graph. It looks like we can expect anywhere between *15.6%* and *37.4%* boost in transistor density with the new GTX 1180.
-```{r}
+Now we use both models to predict transistor densities for an estimated release GTX 1180 release date of August 1, 2018. Divide each by the GTX 1080's transistor density to calculate what the GTX 1180's percentage increase in transistor density will be. We plot our new predicted transistor densities on our graph. It looks like we can expect anywhere between **15.6%** and **37.4%** boost in transistor density with the new GTX 1180.
+```{r, fig.align='center'}
 #predicted performance boost by transistor density through nvidia linear model
 predict(nvidia_transistor_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")/nvidia_transistors[7,2] - 1
 
 #predicted performance boost by transistor density through nvidia transformed model
 predict(nvidia_transistor_model_2, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")^2/nvidia_transistors[7,2] - 1
 
-ggplot(nvidia_transistors, aes(x = date, y = transistors,)) + geom_point() + geom_smooth(se=FALSE,  color = "#76b900") + xlim(as.Date("2009-01-08"), as.Date("2018-8-02")) + ylim(0, 50000) + labs(x = "time", y = "transistor_density") + geom_point(aes(x=as.Date("2018-08-01"), y=predict(nvidia_transistor_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")), shape = 16, color = "black", size = 2) + geom_point(aes(x=as.Date("2018-08-01"), y=predict(nvidia_transistor_model_2, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")^2), shape = 16, color = "black", size = 2) + ggtitle("Nvidia GTX cards transistor density over time")
+ggplot(nvidia_transistors, aes(x = date, y = transistors,)) + geom_point() + geom_smooth(se=FALSE,  color = "#76b900") + xlim(as.Date("2009-01-08"), as.Date("2018-8-02")) + ylim(0, 50000) + labs(x = "time", y = "transistor density") + geom_point(aes(x=as.Date("2018-08-01"), y=predict(nvidia_transistor_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")), shape = 16, color = "black", size = 2) + geom_point(aes(x=as.Date("2018-08-01"), y=predict(nvidia_transistor_model_2, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")^2), shape = 16, color = "black", size = 2) + ggtitle("Nvidia GTX Cards' Transistor Density over Time")
 ```
 
 
 ##Synthetic Benchmarks
 Synthetic benchmarks are generally helpful in gauging performance. While their accuracy can sometimes be susceptible to driver issues and software problems, we are going to take them at face-value here.
 
-Our first plan of attack is to bring in two new metric
-```{r, warning = FALSE}
+First add the 3dMark score, a longstanding synthetic benchmark. We already have data for the floating point performance in the xx80 dataframe. Now let's take a look at how these two performance metrics look over time.
+```{r, warning = FALSE, fig.align='center'}
 xx80$threedmark_score <- c(NA, 3649, 4952, 7672, 10490, 13898, 21787)
+xx80$threedmark_score
+xx80$processing_power_single
 
-bench <- data.frame("card" = rep(c(280, 480, 580, 680, 780, 980, 1080),2), "score" = c(xx80$processing_power_single, xx80$threedmark_score), "category" = c(rep("teraflops", 7), rep("3d_mark_score", 7)), "date" = rep(xx80$launch, 2))
+p1 <- ggplot(xx80, aes(x = as.Date(launch), y = processing_power_single)) + geom_point() + geom_smooth(se=FALSE, color = "#619CFF") + labs(x = "time", y = "floating point performance") + ggtitle("Floating Point Perf. over Time")
+p2 <- ggplot(xx80, aes(x = as.Date(launch), y = threedmark_score)) + geom_point() + geom_smooth(se=FALSE, color = "#F8766D") + labs(x = "time", y = "3DMark Score") + ggtitle("3DMark Score over Time")
+grid.arrange(p1,p2, ncol =2, nrow =1)
+```
 
+```{r}
 threedmark_data <- data.frame("date" = as.Date(xx80$launch), "score" = xx80$threedmark_score)
 tflop_data <- data.frame("date" = as.Date(xx80$launch), "score" = xx80$processing_power_single)
 
 threedmark_model <- lm(score ~ date, threedmark_data)
-summary(threedmark_model)
+summary(threedmark_model)$r.squared
 
 tflop_model <- lm(score ~ date, tflop_data)
-summary(tflop_model)
+summary(tflop_model)$r.squared
 
 powerTransform(tflop_data[,2])
 
 tflop_model2 <- lm(sqrt(score) ~ date, tflop_data)
-summary(tflop_model2)
+summary(tflop_model2)$r.squared
 
 predict(tflop_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")
 
 predict(tflop_model2, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")^2
-
-ggplot(xx80, aes(x = as.Date(launch), y = processing_power_single)) + geom_point() + geom_smooth(se=FALSE, color = "#619CFF")
-ggplot(xx80, aes(x = as.Date(launch), y = threedmark_score)) + geom_point() + geom_smooth(se=FALSE, color = "#F8766D")
 
 #Looking at percentage increase
 xx80$threedmark_percentage <- xx80$threedmark_score/c(1, xx80$threedmark_score[1:6])
