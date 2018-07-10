@@ -51,23 +51,10 @@ Rescale the data for transistor density in terms of transistors per square inch.
 ``` r
 transistor_density <- xx80$transistors_millions/xx80$die_size
 scaled_transistor_density <- xx80$transistors_millions*1000000/xx80$die_size*0.00155
-kable(data.frame("card" = xx80[,1], "transistor_denisty" = scaled_transistor_density), format = "markdown") %>%  kable_styling(bootstrap_options = c("striped", "hover", "condensed", full_width = F, position = "center"))
+grid.table(data.frame("card" = xx80[,1], "transistor_denisty" = scaled_transistor_density), rows = NULL)
 ```
 
-    ## Warning in kable_styling(., bootstrap_options = c("striped", "hover",
-    ## "condensed", : Please specify format in kable. kableExtra can customize
-    ## either HTML or LaTeX outputs. See https://haozhu233.github.io/kableExtra/
-    ## for details.
-
-| card    |  transistor\_denisty|
-|:--------|--------------------:|
-| GTX280  |             3767.361|
-| GTX480  |             8942.308|
-| GTX580  |             8942.308|
-| GTX680  |            18663.265|
-| GTX780  |            19561.497|
-| GTX980  |            20251.256|
-| GTX1080 |            35541.401|
+![](clean_rmd_files/figure-markdown_github/unnamed-chunk-3-1.png)
 
 Moore's Law predicts that the number of transistors per square inch doubles each 18 months. This may be helpful in predicting future Nvidia transistor density. Let's create another vector using Moore's Law. Use GTX 280 transistor density as starting point, and increase by a factor of two every 18 months.
 
@@ -75,25 +62,10 @@ Moore's Law predicts that the number of transistors per square inch doubles each
 moore_predicted_scaled_transistory_density <- rep(scaled_transistor_density[1], 9)*c(1,2,4,8,16,32,64,128,256)
 moore_dates <- c("2009-01-08", "2010-07-08", "2012-01-08", "2012-07-08", "2014-01-08", "2015-07-08", "2017-01-08", "2018-07-08", "2020-01-08")
 
-kable(data.frame("date" = moore_dates, "transistor_denisty" = moore_predicted_scaled_transistory_density), format = "markdown") %>%  kable_styling(bootstrap_options = c("striped", "hover", "condensed", full_width = F, position = "center"))
+grid.table(data.frame("date" = moore_dates, "transistor_denisty" = moore_predicted_scaled_transistory_density), rows = NULL)
 ```
 
-    ## Warning in kable_styling(., bootstrap_options = c("striped", "hover",
-    ## "condensed", : Please specify format in kable. kableExtra can customize
-    ## either HTML or LaTeX outputs. See https://haozhu233.github.io/kableExtra/
-    ## for details.
-
-| date       |  transistor\_denisty|
-|:-----------|--------------------:|
-| 2009-01-08 |             3767.361|
-| 2010-07-08 |             7534.722|
-| 2012-01-08 |            15069.444|
-| 2012-07-08 |            30138.889|
-| 2014-01-08 |            60277.778|
-| 2015-07-08 |           120555.556|
-| 2017-01-08 |           241111.111|
-| 2018-07-08 |           482222.222|
-| 2020-01-08 |           964444.444|
+![](clean_rmd_files/figure-markdown_github/unnamed-chunk-4-1.png)
 
 Let's see where Nvidia's transistor density is compared to Moore's Law.
 
