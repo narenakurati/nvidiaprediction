@@ -2,7 +2,7 @@
 title: "Nvidia Prediction"
 author: "Naren Akurati"
 date: "7/5/2018"
-output: html_docuement
+output: github_document
 ---
 
 ##Approach
