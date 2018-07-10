@@ -1,8 +1,8 @@
 ---
-title: "clean_rmd"
+title: "Nvidia Prediction"
 author: "Naren Akurati"
 date: "7/5/2018"
-output: html_document
+output: html_docuement
 ---
 
 ##Approach
@@ -32,7 +32,7 @@ kable(data.frame("card" = xx80[,1], "transistor_denisty" = scaled_transistor_den
 
 Moore's Law predicts that the number of transistors per square inch doubles each 18 months. This may be helpful in predicting future Nvidia transistor density. Let's create another vector using Moore's Law. Use GTX 280 transistor density as starting point, and increase by a factor of two every 18 months.
 ```{r}
-moore_predicted_scaled_transistory_density <- rep(scaled_transistor_density[1], 9) * c(1,2,4,8,16,32,64,128,256)
+moore_predicted_scaled_transistory_density <- rep(scaled_transistor_density[1], 9)*c(1,2,4,8,16,32,64,128,256)
 moore_dates <- c("2009-01-08", "2010-07-08", "2012-01-08", "2012-07-08", "2014-01-08", "2015-07-08", "2017-01-08", "2018-07-08", "2020-01-08")
 
 kable(data.frame("date" = moore_dates, "transistor_denisty" = moore_predicted_scaled_transistory_density)) %>%  kable_styling(bootstrap_options = c("striped", "hover", "condensed", full_width = F, position = "center"))
@@ -83,7 +83,7 @@ xx80$threedmark_score <- c(NA, 3649, 4952, 7672, 10490, 13898, 21787)
 xx80$threedmark_score
 xx80$processing_power_single
 
-p1 <- ggplot(xx80, aes(x = as.Date(launch), y = processing_power_single)) + geom_point() + geom_smooth(se=FALSE, color = "#619CFF") + labs(x = "time", y = "floating point performance") + ggtitle("Floating Point Perf. over Time")
+p1 <- ggplot(xx80, aes(x = as.Date(launch), y = processing_power_single)) + geom_point() + geom_smooth(se=FALSE, color = "#00BFC4") + labs(x = "time", y = "floating point performance") + ggtitle("Floating Point Perf. over Time")
 p2 <- ggplot(xx80, aes(x = as.Date(launch), y = threedmark_score)) + geom_point() + geom_smooth(se=FALSE, color = "#F8766D") + labs(x = "time", y = "3DMark Score") + ggtitle("3DMark Score over Time")
 grid.arrange(p1,p2, ncol =2, nrow =1)
 ```
@@ -103,13 +103,6 @@ summary(tflop_model2)$r.squared
 predict(tflop_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")
 
 predict(tflop_model2, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")^2
-```
-
-Linear model for 3DMark Score.
-```{r}
-threedmark_data <- data.frame("date" = as.Date(xx80$launch), "score" = xx80$threedmark_score)
-threedmark_model <- lm(score ~ date, threedmark_data)
-summary(threedmark_model)$r.squared
 ```
 
 Now let's look at the percentage increase in 3DMark Score and floating point performance between the generations. Interesting to see that big performance boosts seem to happen every other generation. This indicates we are in for a big upgrade.
