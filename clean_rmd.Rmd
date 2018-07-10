@@ -134,26 +134,26 @@ as.Date(as.character("2018-07-05")) - as.Date(as.character(xx80$launch[7]))
 ```
 
 ##Game Benchmarks
-Won't be looking too much into gaming benchmarks as the people over at Anandtech, Techspot, and PCPer have this down with great detail.
+Thanks to TechSpot for their aggregated 1080p and 1600p benchmarks here. They are known for accurate benchmarks, so this should not be a problem.
 ```{r}
-#Have already added in Battlefield 1 benchmarks at 1080p
-xx80$battlefield1
-
-#Tech spot aggregated game performance
 xx80$average_game_perf_1080p <- c(NA, 21, 24, 40, 56, 77, 127)
 xx80$average_game_perf_1600p <- c(NA, 30, 35, 53, 71, 109, 161)
+```
 
+Using our predicted floating point performance metric from our our previous transformed linear model to make a prediction on 1080p and 1600p gaming performance in average frames per second. We should see a **40%** increase in 1080p performance and a **78%** increase in 1600p performance.
+```{r}
 game_synthetic_scores <- data.frame("date" = as.Date(xx80$launch), "game_perf_1080p" = xx80$average_game_perf_1080p, "game_perf_1600p" = xx80$average_game_perf_1600p, "tflop" = xx80$processing_power_single, "threedmark" = xx80$threedmark_score)
+```
 
+```{r}
 game_synthetic_1080p_model <- lm(game_perf_1080p ~ tflop, data = game_synthetic_scores)
-summary(game_synthetic_1080p_model)
-
+summary(game_synthetic_1080p_model)$r.squared
 game_synthetic_1600p_model <- lm(game_perf_1600p ~ tflop, data = game_synthetic_scores)
-summary(game_synthetic_1600p_model)
+summary(game_synthetic_1600p_model)$r.squared
 
 predict(game_synthetic_1080p_model, newdata = data.frame("tflop" = 12328.65, type = "response"))
-177/127
+predict(game_synthetic_1080p_model, newdata = data.frame("tflop" = 12328.65, type = "response"))/127
 
 predict(game_synthetic_1600p_model, newdata = data.frame("tflop" = 12328.65, type = "response"))
-226/127
+predict(game_synthetic_1600p_model, newdata = data.frame("tflop" = 12328.65, type = "response"))/127
 ```
