@@ -14,34 +14,33 @@ library(kableExtra)
 First bring in the data. Looking at all the cards from the GTX 280 to the current GTX 1080. The most important metrics that are going to help here are floating point performance, synthetic benchmarks, game benchmarks, and transistor count. These tend to be positively correlated with the overall performance of a graphics card, whereas something like memory speed or bus size really depends on the nature of the current architecture.
 
 ``` r
+options(width = 200)
 xx80 <- read.csv("xx80.csv", sep = ";")
 xx80
 ```
 
-    ##   ï..model     launch transistors_millions die_size cuda_cores core_speed
-    ## 1   GTX280 2009-01-08                 1400      576        240        648
-    ## 2   GTX480 2010-03-26                 3000      520        448        700
-    ## 3   GTX580 2010-11-09                 3000      520        512        772
-    ## 4   GTX680 2012-03-22                 3540      294       1536       1110
-    ## 5   GTX780 2013-03-23                 7080      561       2304       1002
-    ## 6   GTX980 2014-09-18                 5200      398       2048       1253
-    ## 7  GTX1080 2016-03-27                 7200      314       2560       1800
-    ##   shader_speed memory_speed pixel_rate texture_rate memory_size_gb
-    ## 1         1476         2484     20.736        51.84            1.0
-    ## 2         1401         3696     33.600        42.00            1.5
-    ## 3         1544         4008     37.050        49.41            1.5
-    ## 4         1006         1110     32.200       128.80            2.0
-    ## 5           NA         1502     41.410       160.50            3.0
-    ## 6           NA         1753     77.820       155.60            4.0
-    ## 7           NA         1376    110.900       277.30            8.0
-    ##   bandwidtch bus processing_power_single processing_power_double tdp price
-    ## 1    159.000 512                  708.48                      NA 204   649
-    ## 2    177.400 384                 1344.96                  168.12 250   499
-    ## 3    192.384 384                 1581.10                  197.63 244   499
-    ## 4    192.256 256                 3090.43                  128.77 195   499
-    ## 5    288.400 384                 3976.70                  165.70 250   649
-    ## 6    224.400 256                 4981.00                  155.60 165   549
-    ## 7    320.300 256                 8873.00                  277.30 180   599
+    ##   ï..model     launch transistors_millions die_size cuda_cores core_speed shader_speed memory_speed pixel_rate texture_rate memory_size_gb bandwidtch bus processing_power_single
+    ## 1   GTX280 2009-01-08                 1400      576        240        648         1476         2484     20.736        51.84            1.0    159.000 512                  708.48
+    ## 2   GTX480 2010-03-26                 3000      520        448        700         1401         3696     33.600        42.00            1.5    177.400 384                 1344.96
+    ## 3   GTX580 2010-11-09                 3000      520        512        772         1544         4008     37.050        49.41            1.5    192.384 384                 1581.10
+    ## 4   GTX680 2012-03-22                 3540      294       1536       1110         1006         1110     32.200       128.80            2.0    192.256 256                 3090.43
+    ## 5   GTX780 2013-03-23                 7080      561       2304       1002           NA         1502     41.410       160.50            3.0    288.400 384                 3976.70
+    ## 6   GTX980 2014-09-18                 5200      398       2048       1253           NA         1753     77.820       155.60            4.0    224.400 256                 4981.00
+    ## 7  GTX1080 2016-03-27                 7200      314       2560       1800           NA         1376    110.900       277.30            8.0    320.300 256                 8873.00
+    ##   processing_power_double tdp price
+    ## 1                      NA 204   649
+    ## 2                  168.12 250   499
+    ## 3                  197.63 244   499
+    ## 4                  128.77 195   499
+    ## 5                  165.70 250   649
+    ## 6                  155.60 165   549
+    ## 7                  277.30 180   599
+
+``` r
+grid.table(data.frame("card" = xx80[,1], "launch" = xx80[,2], "transistors" = xx80[,3], "die_size" = xx80[,4], "floating_point" = xx80$processing_power_single, "cuda_cores" = xx80$cuda_cores, "bandwidth" = xx80$bandwidtch), rows = NULL)
+```
+
+![](clean_rmd_files/figure-markdown_github/set-options-1.png)
 
 Transistor Density
 ------------------
@@ -54,7 +53,7 @@ scaled_transistor_density <- xx80$transistors_millions*1000000/xx80$die_size*0.0
 grid.table(data.frame("card" = xx80[,1], "transistor_denisty" = scaled_transistor_density), rows = NULL)
 ```
 
-![](clean_rmd_files/figure-markdown_github/unnamed-chunk-3-1.png)
+![](clean_rmd_files/figure-markdown_github/unnamed-chunk-2-1.png)
 
 Moore's Law predicts that the number of transistors per square inch doubles each 18 months. This may be helpful in predicting future Nvidia transistor density. Let's create another vector using Moore's Law. Use GTX 280 transistor density as starting point, and increase by a factor of two every 18 months.
 
@@ -65,7 +64,7 @@ moore_dates <- c("2009-01-08", "2010-07-08", "2012-01-08", "2012-07-08", "2014-0
 grid.table(data.frame("date" = moore_dates, "transistor_denisty" = moore_predicted_scaled_transistory_density), rows = NULL)
 ```
 
-![](clean_rmd_files/figure-markdown_github/unnamed-chunk-4-1.png)
+![](clean_rmd_files/figure-markdown_github/unnamed-chunk-3-1.png)
 
 Let's see where Nvidia's transistor density is compared to Moore's Law.
 
@@ -77,7 +76,7 @@ ggplot(transistor_df, aes(x = date, y = transistors, color = type)) + geom_point
 
     ## `geom_smooth()` using method = 'loess'
 
-<img src="clean_rmd_files/figure-markdown_github/unnamed-chunk-5-1.png" style="display: block; margin: auto;" />
+<img src="clean_rmd_files/figure-markdown_github/unnamed-chunk-4-1.png" style="display: block; margin: auto;" />
 
 It looks like Nvidia's progression in transitor density has not kept up with Moore's Law. This makes sense, as it becomes increasingly more difficult with each generation to keep up such progress. Let's create a linear model regressing past GTX graphics cards' transistor densities against time. While the specific release date of each graphics card is definitely important, it's better to avoid using them as factors. Instead, we take the predictor variable, time, as continuous. This helps a lot more with the model's accuracy, especially since, to us, the release date of each graphics card is more or less arbitrary and in the control of Nvidia.
 
@@ -166,7 +165,7 @@ ggplot(nvidia_transistors, aes(x = date, y = transistors,)) + geom_point() + geo
 
     ## `geom_smooth()` using method = 'loess'
 
-<img src="clean_rmd_files/figure-markdown_github/unnamed-chunk-8-1.png" style="display: block; margin: auto;" />
+<img src="clean_rmd_files/figure-markdown_github/unnamed-chunk-7-1.png" style="display: block; margin: auto;" />
 
 Synthetic Benchmarks
 --------------------
@@ -197,7 +196,7 @@ grid.arrange(p1,p2, ncol =2, nrow =1)
     ## `geom_smooth()` using method = 'loess'
     ## `geom_smooth()` using method = 'loess'
 
-<img src="clean_rmd_files/figure-markdown_github/unnamed-chunk-9-1.png" style="display: block; margin: auto;" />
+<img src="clean_rmd_files/figure-markdown_github/unnamed-chunk-8-1.png" style="display: block; margin: auto;" />
 
 Looking at the floating point performance, we can create a linear model. Floating point perfromance tends to be follow transistor density extremely closely. We can apply the same transformation as we did on the transistor density model. Use the predict function on both models. Looks like we can expect anywhere between **10,097.98** and **12,328.65** FLOPs with the new GTX 1180.
 
@@ -252,7 +251,7 @@ ggplot(bench_percentage, aes(x = as.Date(date), y = percentage_imporvement, colo
 
     ## `geom_smooth()` using method = 'loess'
 
-<img src="clean_rmd_files/figure-markdown_github/unnamed-chunk-11-1.png" style="display: block; margin: auto;" />
+<img src="clean_rmd_files/figure-markdown_github/unnamed-chunk-10-1.png" style="display: block; margin: auto;" />
 
 ``` r
 xx80$processing_power_single_percentage

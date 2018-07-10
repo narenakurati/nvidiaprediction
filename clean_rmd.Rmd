@@ -19,9 +19,11 @@ library(kableExtra)
 ```
 
 First bring in the data. Looking at all the cards from the GTX 280 to the current GTX 1080. The most important metrics that are going to help here are floating point performance, synthetic benchmarks, game benchmarks, and transistor count. These tend to be positively correlated with the overall performance of a graphics card, whereas something like memory speed or bus size really depends on the nature of the current architecture.
-```{r}
+```{r, set-options}
+options(width = 200)
 xx80 <- read.csv("xx80.csv", sep = ";")
 xx80
+grid.table(data.frame("card" = xx80[,1], "launch" = xx80[,2], "transistors" = xx80[,3], "die_size" = xx80[,4], "floating_point" = xx80$processing_power_single, "cuda_cores" = xx80$cuda_cores, "bandwidth" = xx80$bandwidtch), rows = NULL)
 ```
 
 ##Transistor Density
