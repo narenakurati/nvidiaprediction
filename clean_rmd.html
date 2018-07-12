@@ -243,6 +243,9 @@ predict(nvidia_transistor_model, newdata = data.frame(&quot;date&quot; = as.Date
 predict(nvidia_transistor_model_2, newdata = data.frame(&quot;date&quot; = as.Date(&quot;2018-08-01&quot;)), type = &quot;response&quot;)^2/nvidia_transistors[7,2] - 1</code></pre>
 <pre><code>##         1 
 ## 0.3742506</code></pre>
+<pre class="r"><code>predict(nvidia_transistor_model_2, newdata = data.frame(&quot;date&quot; = as.Date(&quot;2018-08-01&quot;)), type = &quot;response&quot;)^2</code></pre>
+<pre><code>##        1 
+## 48842.79</code></pre>
 <pre class="r"><code>plot2 &lt;- ggplot(nvidia_transistors, aes(x = date, y = transistors,)) + geom_point() + geom_smooth(se=FALSE,  color = &quot;#76b900&quot;) + xlim(as.Date(&quot;2009-01-08&quot;), as.Date(&quot;2018-8-02&quot;)) + ylim(0, 50000) + labs(x = &quot;time&quot;, y = &quot;transistor density&quot;) + geom_point(aes(x=as.Date(&quot;2018-08-01&quot;), y=predict(nvidia_transistor_model, newdata = data.frame(&quot;date&quot; = as.Date(&quot;2018-08-01&quot;)), type = &quot;response&quot;)), shape = 16, color = &quot;black&quot;, size = 2) + geom_point(aes(x=as.Date(&quot;2018-08-01&quot;), y=predict(nvidia_transistor_model_2, newdata = data.frame(&quot;date&quot; = as.Date(&quot;2018-08-01&quot;)), type = &quot;response&quot;)^2), shape = 16, color = &quot;black&quot;, size = 2) + ggtitle(&quot;Nvidia GTX Cards' Transistor Density over Time&quot;)
 
 ggsave(filename = &quot;plot2.svg&quot;, plot=plot2)</code></pre>

@@ -33,6 +33,7 @@ Rescale the data for transistor density in terms of transistors per square inch.
 ```{r}
 transistor_density <- xx80$transistors_millions/xx80$die_size
 scaled_transistor_density <- xx80$transistors_millions*1000000/xx80$die_size*0.00155
+scaled_transistor_density
 
 svg("table2.svg", height = 2.5)
 
@@ -81,6 +82,8 @@ predict(nvidia_transistor_model, newdata = data.frame("date" = as.Date("2018-08-
 
 #predicted performance boost by transistor density through nvidia transformed model
 predict(nvidia_transistor_model_2, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")^2/nvidia_transistors[7,2] - 1
+
+predict(nvidia_transistor_model_2, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")^2
 
 plot2 <- ggplot(nvidia_transistors, aes(x = date, y = transistors,)) + geom_point() + geom_smooth(se=FALSE,  color = "#76b900") + xlim(as.Date("2009-01-08"), as.Date("2018-8-02")) + ylim(0, 50000) + labs(x = "time", y = "transistor density") + geom_point(aes(x=as.Date("2018-08-01"), y=predict(nvidia_transistor_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")), shape = 16, color = "black", size = 2) + geom_point(aes(x=as.Date("2018-08-01"), y=predict(nvidia_transistor_model_2, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")^2), shape = 16, color = "black", size = 2) + ggtitle("Nvidia GTX Cards' Transistor Density over Time")
 
