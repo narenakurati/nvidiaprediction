@@ -15,6 +15,7 @@ library(gridExtra)
 library(knitr)
 library(kableExtra)
 library(svglite)
+library(Cairo)
 ```
 
 First bring in the data. Looking at all the cards from the GTX 280 to the current GTX 1080. The most important metrics that are going to help here are floating point performance, synthetic benchmarks, game benchmarks, and transistor count. These tend to be positively correlated with the overall performance of a graphics card, whereas something like memory speed or bus size really depends on the nature of the current architecture.
@@ -32,7 +33,7 @@ grid.table(data.frame("card" = xx80[,1], "launch" = xx80[,2], "transistors" = xx
 Rescale the data for transistor density in terms of transistors per square inch.
 ```{r}
 transistor_density <- xx80$transistors_millions/xx80$die_size
-scaled_transistor_density <- xx80$transistors_millions*1000000/xx80$die_size*0.00155
+scaled_transistor_density <- (xx80$transistors_millions*1000000)/(xx80$die_size*0.00155)
 scaled_transistor_density
 
 svg("table2.svg", height = 2.5)
@@ -51,10 +52,10 @@ grid.table(data.frame("date" = moore_dates, "transistor_denisty" = moore_predict
 ```
 
 Let's see where Nvidia's transistor density is compared to Moore's Law.
-```{r, warning = FALSE, fig.align='center'}
+```{r, warning = FALSE}
 transistor_df <- data.frame("date" = c(as.Date(xx80$launch), as.Date(moore_dates)), "transistors" = c(scaled_transistor_density, moore_predicted_scaled_transistory_density), "type" = c(rep("nvidia", 7), rep("moore", 9))) 
 
-plot1 <- ggplot(transistor_df, aes(x = date, y = transistors, color = type)) + geom_point() + geom_smooth(se=FALSE) + scale_color_manual(values=c("royalblue1", "#76b900")) + xlim(as.Date("2009-01-08"), as.Date("2018-08-02")) + ylim(0, 500000) + labs(x = "time", y = "transistor density")
+plot1 <- ggplot(transistor_df, aes(x = date, y = transistors, color = type)) + geom_point() + geom_smooth(se=FALSE) + scale_color_manual(values=c("royalblue1", "#76b900")) + xlim(as.Date("2009-01-08"), as.Date("2018-08-02")) + labs(x = "time", y = "transistor density") + ylim(0, 225000000000)
 ggsave(filename = "plot1.svg", plot=plot1)
 ```
 
@@ -76,16 +77,20 @@ summary(nvidia_transistor_model_2)
 ```
 
 Now we use both models to predict transistor densities for an estimated release GTX 1180 release date of August 1, 2018. Divide each by the GTX 1080's transistor density to calculate what the GTX 1180's percentage increase in transistor density will be. We plot our new predicted transistor densities on our graph. It looks like we can expect anywhere between **15.6%** and **37.4%** boost in transistor density with the new GTX 1180.
-```{r, fig.align='center'}
+```{r}
 #predicted performance boost by transistor density through nvidia linear model
 predict(nvidia_transistor_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")/nvidia_transistors[7,2] - 1
+
+predict(nvidia_transistor_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")
 
 #predicted performance boost by transistor density through nvidia transformed model
 predict(nvidia_transistor_model_2, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")^2/nvidia_transistors[7,2] - 1
 
 predict(nvidia_transistor_model_2, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")^2
 
-plot2 <- ggplot(nvidia_transistors, aes(x = date, y = transistors,)) + geom_point() + geom_smooth(se=FALSE,  color = "#76b900") + xlim(as.Date("2009-01-08"), as.Date("2018-8-02")) + ylim(0, 50000) + labs(x = "time", y = "transistor density") + geom_point(aes(x=as.Date("2018-08-01"), y=predict(nvidia_transistor_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")), shape = 16, color = "black", size = 2) + geom_point(aes(x=as.Date("2018-08-01"), y=predict(nvidia_transistor_model_2, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")^2), shape = 16, color = "black", size = 2) + ggtitle("Nvidia GTX Cards' Transistor Density over Time")
+plot2 <- ggplot(nvidia_transistors, aes(x = date, y = transistors,)) + geom_point() + geom_smooth(se=FALSE,  color = "#76b900") + xlim(as.Date("2009-01-08"), as.Date("2018-8-02"))  + labs(x = "time", y = "transistor density") + geom_point(aes(x=as.Date("2018-08-01"), y=predict(nvidia_transistor_model, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")), shape = 16, color = "black", size = 2) + geom_point(aes(x=as.Date("2018-08-01"), y=predict(nvidia_transistor_model_2, newdata = data.frame("date" = as.Date("2018-08-01")), type = "response")^2), shape = 16, color = "black", size = 2) + ggtitle("Nvidia GTX Cards' Transistor Density over Time")
+
+#removed + ylim(0, 50000)
 
 ggsave(filename = "plot2.svg", plot=plot2)
 ```
@@ -95,7 +100,7 @@ ggsave(filename = "plot2.svg", plot=plot2)
 Synthetic benchmarks are generally helpful in gauging performance. While their accuracy can sometimes be susceptible to driver issues and software problems, we are going to take them at face-value here.
 
 First add the 3dMark score, a longstanding synthetic benchmark. We already have data for the floating point performance in the xx80 dataframe. Now let's take a look at how these two performance metrics look over time.
-```{r, warning = FALSE, fig.align='center'}
+```{r, warning = FALSE}
 xx80$threedmark_score <- c(NA, 3649, 4952, 7672, 10490, 13898, 21787)
 xx80$threedmark_score
 xx80$processing_power_single
@@ -124,7 +129,7 @@ predict(tflop_model2, newdata = data.frame("date" = as.Date("2018-08-01")), type
 ```
 
 Now let's look at the percentage increase in 3DMark Score and floating point performance between the generations. Interesting to see that big performance boosts seem to happen every other generation. This indicates we are in for a big upgrade.
-```{r, warning = FALSE, fig.align='center'}
+```{r, warning = FALSE}
 xx80$threedmark_percentage <- xx80$threedmark_score/c(1, xx80$threedmark_score[1:6])
 xx80$processing_power_single_percentage <- xx80$processing_power_single/c(NA, xx80$processing_power_single[1:6])
 

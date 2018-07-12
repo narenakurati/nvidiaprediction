@@ -15,7 +15,7 @@ b <- ggplot(df, aes(x=metric, y=value)) + geom_bar(aes(fill = metric), stat = "i
 b
 ggsave(filename = "test.svg", plot=b)
 
-df1 <- data.frame("card" = c("1080", "1180"), "transistor density" = c(35541.401, 48842.79), "TFLOPs" = c(8873.00, 12328.65), "1080p performance" = c(127, 177.4223), "1600p performance" = c(161, 226.2672))
+df1 <- data.frame("card" = c("1080", "1180"), "transistor density" = c(14793507294, 20329985870), "TFLOPs" = c(8873.00, 12328.65), "1080p performance" = c(127, 177.4223), "1600p performance" = c(161, 226.2672))
 
 d1 <- ggplot(df1, aes(x = card, y = transistor.density)) + geom_bar(stat = "identity", fill = "#2B83BA") + guides(fill=FALSE) + labs(y = "transistor density")
 d2 <- ggplot(df1, aes(x = card, y = TFLOPs)) + geom_bar(stat = "identity", fill = "#D7191C")  + guides(fill=FALSE)
