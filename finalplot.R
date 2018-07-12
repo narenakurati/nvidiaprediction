@@ -19,7 +19,7 @@ df1 <- data.frame("card" = c("1080", "1180"), "transistor density" = c(35541.401
 
 d1 <- ggplot(df1, aes(x = card, y = transistor.density)) + geom_bar(stat = "identity", fill = "#2B83BA") + guides(fill=FALSE) + labs(y = "transistor density")
 d2 <- ggplot(df1, aes(x = card, y = TFLOPs)) + geom_bar(stat = "identity", fill = "#D7191C")  + guides(fill=FALSE)
-d3 <- ggplot(df1, aes(x = card, y = X1080p.performance)) + geom_bar(stat = "identity", fill = "#FDAE61")  + guides(fill=FALSE) + labs(y = "1080p performance")
+d3 <- ggplot(df1, aes(x = card, y = X1080p.performance)) + geom_bar(stat = "identity", fill = "#FDAE61")  + guides(fill=FALSE) + labs(y = "gaming performance")
 
 finalgraphscomposite <- grid.arrange(d1,d2,d3, ncol =3, nrow =1)
 ggsave(filename = "finalgraphscomposite.svg", plot=finalgraphscomposite)
